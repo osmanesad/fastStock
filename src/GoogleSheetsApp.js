@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-const SHEET_ID = '1oCG5VsgXfzoroQ4XBEaRKW59rFignOGitzHd54ZmQDM';
+const SHEET_ID = 'XXXXX';
 
-const API_KEY = 'AIzaSyAXKShQUgtM2l2t7BxZehlKzQ5uYWT8ciI';
+const API_KEY = 'XXXXX';
 
 const GoogleSheetsApp = () => {
   const [data, setData] = useState([]);
