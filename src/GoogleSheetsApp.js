@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GoogleLogin } from 'react-google-login';
 
 const SHEET_ID = '1lbxgwy4MAWow2EMb0d4d6hUT2oxKktlxCv8kmFYxveg';
-const API_KEY = 'AIzaSyB4qFN34s6k-pdLKYLcYcEWS_HX4y4S1hc';
+const CLIENT_ID = '778287158950-0ant4igtvapakni3comu4hkn0hms5hud.apps.googleusercontent.com'; // Buraya kendi Client ID'nizi yazın
 
 const GoogleSheetsApp = () => {
   const [data, setData] = useState([]);
@@ -9,8 +10,8 @@ const GoogleSheetsApp = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [accessToken, setAccessToken] = useState('');
 
-  // Yeni ürün bilgileri
   const [newProduct, setNewProduct] = useState({
     barcode: '',
     title: '',
@@ -20,27 +21,37 @@ const GoogleSheetsApp = () => {
     category: '',
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!accessToken) return; // Erişim belirteci yoksa veri çekme
+
     setLoading(true);
     try {
       const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sayfa1!A1:Z999?key=${API_KEY}`
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sayfa1!A1:Z999?access_token=${accessToken}`
       );
       const result = await response.json();
 
-      // Gelen veriyi güncellenmiş yapıya göre ayarlayın
+      // Eğer response ok değilse hata durumu
+      if (!response.ok) {
+        console.error('API isteği başarısız:', response);
+        throw new Error(result.error.message || 'Veri çekilirken bir hata oluştu');
+      }
+
       setData(result.values || []);
       setFilteredData(result.values?.slice(1) || []);
       setLoading(false);
     } catch (err) {
-      setError('Veri çekilirken bir hata oluştu');
+      setError(err.message || 'Veri çekilirken bir hata oluştu');
       setLoading(false);
     }
-  };
+  }, [accessToken]);
+
+
+  
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [accessToken, fetchData]);
 
   useEffect(() => {
     const filtered = data.slice(1).filter(row =>
@@ -59,7 +70,6 @@ const GoogleSheetsApp = () => {
     setSearchTerm(event.target.value);
   };
 
-  // Yeni ürün ekleme fonksiyonu
   const handleAddProduct = async () => {
     const values = [
       newProduct.barcode,
@@ -77,8 +87,8 @@ const GoogleSheetsApp = () => {
     };
 
     try {
-      await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sayfa1!A1:append?valueInputOption=RAW&key=${API_KEY}`,
+      const response = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sayfa1!A1:append?valueInputOption=RAW&access_token=${accessToken}`,
         {
           method: 'POST',
           headers: {
@@ -87,7 +97,14 @@ const GoogleSheetsApp = () => {
           body: JSON.stringify(body),
         }
       );
-      // Veritabanı güncellendikten sonra formu sıfırlayın
+
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        console.error('Ürün eklenirken bir hata oluştu:', errorMessage);
+        setError('Ürün eklenirken bir hata oluştu');
+        return;
+      }
+
       setNewProduct({
         barcode: '',
         title: '',
@@ -108,12 +125,32 @@ const GoogleSheetsApp = () => {
     setNewProduct({ ...newProduct, [name]: value });
   };
 
+  const onSuccess = (response) => {
+    setAccessToken(response.accessToken); // Erişim belirtecini kaydet
+    fetchData(); // Başarılı giriş sonrası verileri çek
+  };
+
+  const onFailure = (response) => {
+    console.error('Giriş başarısız:', response);
+    setError('Giriş başarısız. Lütfen tekrar deneyin.');
+  };
+
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Yükleniyor...</div>;
   if (error) return <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>;
 
+  
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Google Sheets Verileri</h1>
+
+      {/* Google Giriş */}
+      <GoogleLogin
+        clientId={CLIENT_ID}
+        buttonText="Google ile Giriş Yap"
+        onSuccess={onSuccess}
+        onFailure={onFailure}
+        cookiePolicy={'single_host_origin'}
+      />
 
       {/* Yeni ürün ekleme formu */}
       <div style={{ marginBottom: '20px' }}>
