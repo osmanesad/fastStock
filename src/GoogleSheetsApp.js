@@ -1,32 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import supabase from './supabaseClient'; // Supabase istemcisi
 
-const SHEET_ID = '1oCG5VsgXfzoroQ4XBEaRKW59rFignOGitzHd54ZmQDM';
-const API_KEY = 'AIzaSyBZF3typaY3kR24tRiKAobCcmZFdkP-Rq4';
 
-const GoogleSheetsApp = () => {
+
+const SupabaseApp = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(''); // Boş string başlangıç değeri
+  const [searchTerm, setSearchTerm] = useState('');
 
+  // Veriyi Supabase'den çek
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sayfa1!A1:Z999?key=${API_KEY}`
-      );
-      const result = await response.json();
+      const { data: fetchedData, error } = await supabase.from('stok').select('*');
 
-      if (!result.values || result.values.length === 0) {
-        setData([]);
-        setFilteredData([]);
-        setLoading(false);
-        return;
+      if (error) {
+        throw error;
       }
 
-      setData(result.values || []);
-      setFilteredData(result.values.slice(1) || []); // İlk satırı (başlık) hariç tut
+      setData(fetchedData || []);
+      setFilteredData(fetchedData || []);
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Veri çekilirken bir hata oluştu');
@@ -40,13 +35,13 @@ const GoogleSheetsApp = () => {
 
   useEffect(() => {
     if (!searchTerm) {
-      setFilteredData(data.slice(1)); // Tüm veriyi göster
+      setFilteredData(data); // Tüm veriyi göster
       return;
     }
 
-    const filtered = data.slice(1).filter(row =>
-      row.some(cell =>
-        cell?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = data.filter((row) =>
+      Object.values(row).some((value) =>
+        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
 
@@ -83,7 +78,7 @@ const GoogleSheetsApp = () => {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
-        Google Sheets Verileri
+        Supabase Verileri
       </h1>
 
       <div
@@ -123,24 +118,25 @@ const GoogleSheetsApp = () => {
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            {data[0]?.map((header, index) => (
-              <th
-                key={index}
-                style={{
-                  border: '1px solid #ddd',
-                  padding: '12px',
-                  backgroundColor: '#f2f2f2',
-                }}
-              >
-                {header}
-              </th>
-            ))}
+            {data[0] &&
+              Object.keys(data[0]).map((header, index) => (
+                <th
+                  key={index}
+                  style={{
+                    border: '1px solid #ddd',
+                    padding: '12px',
+                    backgroundColor: '#f2f2f2',
+                  }}
+                >
+                  {header}
+                </th>
+              ))}
           </tr>
         </thead>
         <tbody>
           {filteredData.map((row, rowIndex) => (
             <tr key={rowIndex}>
-              {row.map((cell, cellIndex) => (
+              {Object.values(row).map((cell, cellIndex) => (
                 <td
                   key={cellIndex}
                   style={{ border: '1px solid #ddd', padding: '12px' }}
@@ -161,4 +157,4 @@ const GoogleSheetsApp = () => {
   );
 };
 
-export default GoogleSheetsApp;
+export default SupabaseApp;
