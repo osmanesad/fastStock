@@ -1,70 +1,109 @@
-# Getting Started with Create React App
+# fastStock
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+fastStock, React kullanılarak geliştirilmiş ve Supabase entegrasyonu ile çalışan bir stok takip uygulamasıdır. Uygulama, Supabase veritabanındaki "stok" tablosundan verileri çekerek; listeleme, arama, sıralama ve yeni kayıt ekleme gibi işlemleri gerçekleştirmektedir.
 
-## Available Scripts
+## Özellikler
+- **Veri Görüntüleme:** Supabase'deki stok verilerinin listelenmesi.
+- **Arama ve Filtreleme:** Girilen arama terimine göre verilerin dinamik olarak filtrelenmesi.
+- **Sıralama:** Tablo başlıklarına tıklayarak verileri artan/azalan sırada sıralama.
+- **Yeni Kayıt Ekleme:** Ürün adı ve stok bilgilerini girerek yeni kayıt ekleme.
+- **Veri Yenileme:** Verilerin Supabase'den yeniden çekilmesi.
+- **Responsive Tasarım:** Farklı ekran boyutlarına uyumlu modern tasarım.
 
-In the project directory, you can run:
+## Gereksinimler
+- **Node.js:** Önerilen sürüm v16 veya v18 (Node.js v17 ve sonrası için OpenSSL uyumluluğu amacıyla ek ayarlar gerekebilir)
+- **npm:** Paket yöneticisi
+- **Supabase Hesabı:** Bir Supabase projesi oluşturun ve "stok" tablonuzun şemasını aşağıdaki örneğe uygun şekilde ayarlayın (örneğin, sütunlar: `urun_adi`, `stok`)
 
-### `npm start`
+## Kurulum Adımları
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. **Depoyu Klonlayın:**
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+   ```bash
+   git clone https://github.com/your-username/fastStock.git
+   cd fastStock
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. **Bağımlılıkları Yükleyin:**
 
-### `npm run build`
+bash
+Kopyala
+npm install
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. **Supabase Ayarları:**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+src/supabaseClient.js dosyasını açın.
 
-### `npm run eject`
+supabaseUrl ve supabaseKey değerlerini kendi Supabase projenizin bilgileriyle güncelleyin.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+4. **(Gerekirse) OpenSSL Ayarları:**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Node.js v17 veya üstü kullanıyorsanız, aşağıdaki ortam değişkenini ayarlamanız gerekebilir:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Windows (CMD):
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+bash
+Kopyala
+set NODE_OPTIONS=--openssl-legacy-provider
+npm start
+Windows (PowerShell):
 
-## Learn More
+bash
+Kopyala
+$env:NODE_OPTIONS="--openssl-legacy-provider"
+npm start
+Linux/macOS:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+bash
+Kopyala
+export NODE_OPTIONS=--openssl-legacy-provider
+npm start
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. **Çalıştırma:**
+Geliştirme modunda projeyi başlatmak için:
 
-### Code Splitting
+bash
+Kopyala
+npm start
+Tarayıcınız otomatik olarak açılarak uygulamanın çalıştığını göreceksiniz.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+6. **Proje Yapısı**
+src/App.js: Uygulamanın ana bileşeni. GoogleSheetsApp bileşenini içerir.
 
-### Analyzing the Bundle Size
+src/GoogleSheetsApp.js: Supabase entegrasyonu, veri çekme, arama, sıralama ve yeni kayıt ekleme işlevlerinin bulunduğu bileşen.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+src/GoogleSheetsApp.css: Uygulamanın stil dosyası.
 
-### Making a Progressive Web App
+src/supabaseClient.js: Supabase istemcisinin oluşturulduğu ve yapılandırıldığı dosya.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+src/index.js: React uygulamasının giriş noktası.
 
-### Advanced Configuration
+src/App.test.js: Test dosyası (React Testing Library ile temel testler).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+src/setupTests.js: Test ortamının yapılandırılması.
 
-### Deployment
+7. **Test**
+Uygulamayı test etmek için:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+bash
+Kopyala
+npm test
+Üretim İçin Derleme
+Projeyi üretim moduna derlemek için:
 
-### `npm run build` fails to minify
+bash
+Kopyala
+npm run build
+Sorun Giderme
+"react-scripts is not recognized":
+Bağımlılıkların tam olarak yüklendiğinden emin olun (npm install komutunu tekrar çalıştırın).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+8. **OpenSSL Hatası:**
+Node.js v17 ve sonrası için yukarıdaki NODE_OPTIONS ayarını yapın.
+
+9. **Supabase Hataları:**
+supabaseClient.js dosyasında yer alan URL ve API anahtarınızın doğru olduğundan emin olun. Ayrıca, Supabase'deki "stok" tablonuzun şemasının uygulamada kullanılan sütun adlarıyla (örneğin, urun_adi ve stok) uyumlu olduğuna dikkat edin.
+
+10. **Katkıda Bulunma**
+Herhangi bir hata bildirimi veya geliştirme öneriniz için lütfen repo sahibine ulaşın ya da pull request gönderin.
