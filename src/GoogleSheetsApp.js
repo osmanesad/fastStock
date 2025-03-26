@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import supabase from './supabaseClient'; // Supabase istemcisi
-
-
+import React, { useState, useEffect, useCallback } from 'react';
+import supabase from './supabaseClient';
+import debounce from 'lodash.debounce';
+import './GoogleSheetsApp.css';
 
 const SupabaseApp = () => {
+  // Mevcut durumlar
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
-  // Veriyi Supabase'den çek
+  // Yeni kayıt eklemek için durumlar
+  const [newName, setNewName] = useState('');
+  const [newStok, setNewStok] = useState('');
+
+  // Supabase'den veri çekme
   const fetchData = async () => {
     setLoading(true);
     try {
-      const { data: fetchedData, error } = await supabase.from('stok').select('*');
-
-      if (error) {
-        throw error;
-      }
-
+      const { data: fetchedData, error } = await supabase.from('products').select('*');
+      if (error) throw error;
       setData(fetchedData || []);
       setFilteredData(fetchedData || []);
       setLoading(false);
@@ -33,125 +35,164 @@ const SupabaseApp = () => {
     fetchData();
   }, []);
 
+  // Debounce kullanarak arama işlemi (300ms gecikme)
+  const debouncedFilter = useCallback(
+    debounce((searchVal, data) => {
+      if (!searchVal) {
+        setFilteredData(data);
+      } else {
+        const filtered = data.filter((row) =>
+          Object.values(row).some((value) =>
+            value?.toString().toLowerCase().includes(searchVal.toLowerCase())
+          )
+        );
+        setFilteredData(filtered);
+      }
+    }, 300),
+    []
+  );
+
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredData(data); // Tüm veriyi göster
-      return;
+    debouncedFilter(searchTerm, data);
+  }, [searchTerm, data, debouncedFilter]);
+
+  // Sıralanmış veriyi hesaplama
+  const sortedData = React.useMemo(() => {
+    let sortableData = [...filteredData];
+    if (sortConfig.key !== null) {
+      sortableData.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
     }
-
-    const filtered = data.filter((row) =>
-      Object.values(row).some((value) =>
-        value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-
-    setFilteredData(filtered);
-  }, [searchTerm, data]);
+    return sortableData;
+  }, [filteredData, sortConfig]);
 
   const handleSearch = (event) => {
-    setSearchTerm(event.target.value); // Kullanıcı girişini güncelle
+    setSearchTerm(event.target.value);
   };
 
   const handleRefresh = () => {
-    fetchData(); // Yeniden veri çek
+    fetchData();
+  };
+
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Yeni kayıt ekleme işlemi
+  const handleAddRecord = async () => {
+    if (!newName || !newStok) {
+      alert('Lütfen tüm alanları doldurun.');
+      return;
+    }
+    try {
+      const quantity = parseInt(newStok, 10);
+      const { error } = await supabase.from('products').insert([{ name: newName, quantity: quantity }]);
+      if (error) throw error;
+      // Alanları temizle ve listeyi güncelle
+      setNewName('');
+      setNewStok('');
+      fetchData();
+    } catch (err) {
+      alert(err.message || 'Ekleme sırasında bir hata oluştu.');
+    }
   };
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-        }}
-      >
+      <div className="loading-container">
         Yükleniyor...
       </div>
     );
   }
 
   if (error) {
-    return <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>;
+    return <div className="error-message">{error}</div>;
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>
-        Supabase Verileri
-      </h1>
+    <div className="app-container">
+      <h1 className="title">Supabase Verileri</h1>
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '20px',
-        }}
-      >
+      {/* Yeni kayıt ekleme formu */}
+      <div className="add-form">
+        <input
+          type="text"
+          placeholder="Ürün Adı"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          className="add-input"
+        />
+        <input
+          type="number"
+          placeholder="Stok"
+          value={newStok}
+          onChange={(e) => setNewStok(e.target.value)}
+          className="add-input"
+        />
+        <button onClick={handleAddRecord} className="add-button">
+          Ekle
+        </button>
+      </div>
+
+      <div className="controls">
         <input
           type="text"
           placeholder="Ara..."
           value={searchTerm}
           onChange={handleSearch}
-          style={{
-            padding: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          className="search-input"
         />
-        <button
-          onClick={handleRefresh}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
+        <button onClick={handleRefresh} className="refresh-button">
           Yenile
         </button>
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table className="data-table">
         <thead>
           <tr>
             {data[0] &&
               Object.keys(data[0]).map((header, index) => (
                 <th
                   key={index}
-                  style={{
-                    border: '1px solid #ddd',
-                    padding: '12px',
-                    backgroundColor: '#f2f2f2',
-                  }}
+                  onClick={() => requestSort(header)}
+                  className="table-header"
                 >
                   {header}
+                  {sortConfig.key === header
+                    ? sortConfig.direction === 'ascending'
+                      ? ' ▲'
+                      : ' ▼'
+                    : null}
                 </th>
               ))}
           </tr>
         </thead>
         <tbody>
-          {filteredData.map((row, rowIndex) => (
+          {sortedData.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {Object.values(row).map((cell, cellIndex) => (
-                <td
-                  key={cellIndex}
-                  style={{ border: '1px solid #ddd', padding: '12px' }}
-                >
-                  {cell}
-                </td>
+                <td key={cellIndex}>{cell}</td>
               ))}
             </tr>
           ))}
         </tbody>
       </table>
-      {filteredData.length === 0 && (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          Sonuç bulunamadı.
-        </div>
+
+      {sortedData.length === 0 && (
+        <div className="no-results">Sonuç bulunamadı.</div>
       )}
     </div>
   );
