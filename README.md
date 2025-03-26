@@ -27,7 +27,7 @@ fastStock, React kullanılarak geliştirilmiş ve Supabase entegrasyonu ile çal
 2. **Bağımlılıkları Yükleyin:**
 
 
-```npm install
+npm install
 
 
 3. **Supabase Ayarları:**
@@ -43,25 +43,25 @@ Node.js v17 veya üstü kullanıyorsanız, aşağıdaki ortam değişkenini ayar
 Windows (CMD):
 
 
-```set NODE_OPTIONS=--openssl-legacy-provider
-```npm start
+set NODE_OPTIONS=--openssl-legacy-provider
+npm start
 
 Windows (PowerShell):
 
-```$env:NODE_OPTIONS="--openssl-legacy-provider"
-```npm start
-```Linux/macOS:
+$env:NODE_OPTIONS="--openssl-legacy-provider"
+npm start
+Linux/macOS:
 
 
-```export NODE_OPTIONS=--openssl-legacy-provider
-```npm start
+export NODE_OPTIONS=--openssl-legacy-provider
+npm start
 
 5. **Çalıştırma:**
 
 Geliştirme modunda projeyi başlatmak için:
 
 
-```npm start
+npm start
 
 Tarayıcınız otomatik olarak açılarak uygulamanın çalıştığını göreceksiniz.
 
@@ -86,13 +86,13 @@ src/setupTests.js: Test ortamının yapılandırılması.
 Uygulamayı test etmek için:
 
 
-```npm test
+npm test
 
 Üretim İçin Derleme
 
 Projeyi üretim moduna derlemek için:
 
-```npm run build
+npm run build
 
 Sorun Giderme
 
