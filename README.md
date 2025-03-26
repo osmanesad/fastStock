@@ -61,6 +61,7 @@ export NODE_OPTIONS=--openssl-legacy-provider
 npm start
 
 5. **Çalıştırma:**
+
 Geliştirme modunda projeyi başlatmak için:
 
 bash
@@ -69,6 +70,7 @@ npm start
 Tarayıcınız otomatik olarak açılarak uygulamanın çalıştığını göreceksiniz.
 
 6. **Proje Yapısı**
+
 src/App.js: Uygulamanın ana bileşeni. GoogleSheetsApp bileşenini içerir.
 
 src/GoogleSheetsApp.js: Supabase entegrasyonu, veri çekme, arama, sıralama ve yeni kayıt ekleme işlevlerinin bulunduğu bileşen.
@@ -84,6 +86,7 @@ src/App.test.js: Test dosyası (React Testing Library ile temel testler).
 src/setupTests.js: Test ortamının yapılandırılması.
 
 7. **Test**
+
 Uygulamayı test etmek için:
 
 bash
@@ -100,10 +103,13 @@ Sorun Giderme
 Bağımlılıkların tam olarak yüklendiğinden emin olun (npm install komutunu tekrar çalıştırın).
 
 8. **OpenSSL Hatası:**
+
 Node.js v17 ve sonrası için yukarıdaki NODE_OPTIONS ayarını yapın.
 
 9. **Supabase Hataları:**
+
 supabaseClient.js dosyasında yer alan URL ve API anahtarınızın doğru olduğundan emin olun. Ayrıca, Supabase'deki "stok" tablonuzun şemasının uygulamada kullanılan sütun adlarıyla (örneğin, urun_adi ve stok) uyumlu olduğuna dikkat edin.
 
 10. **Katkıda Bulunma**
+
 Herhangi bir hata bildirimi veya geliştirme öneriniz için lütfen repo sahibine ulaşın ya da pull request gönderin.
